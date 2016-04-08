@@ -34,6 +34,11 @@ public class PdcRESTCallTest {
     }
 
     @Test
+    public void testAuth() throws Exception {
+        client.auth();
+    }
+    
+    @Test
     //@Ignore
     public void testListProds() throws Exception {
         List<Product> prods = client.listProducts();
