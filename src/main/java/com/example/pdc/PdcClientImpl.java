@@ -371,8 +371,7 @@ public class PdcClientImpl implements PdcClient, InvocationHandler{
 					return null;
 				}
 			};
-			httpclient.getCredentialsProvider().setCredentials(
-					new AuthScope(null, -1, null), credential);
+			httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, credential);
 			return httpclient;
 		} catch (Exception ex) {
 			LOGGER.error("Wrap httpclient error.", ex);
