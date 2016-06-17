@@ -1,7 +1,6 @@
 package com.example.pdc;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -15,9 +14,6 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -32,15 +28,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.NegotiateSchemeFactory;
+import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -351,33 +349,16 @@ public class PdcClientImpl implements PdcClient, InvocationHandler{
 						throws java.security.cert.CertificateException {
 				}
 			};
-			X509HostnameVerifier hostnameVerifier = new X509HostnameVerifier() {
-				public void verify(String host, SSLSocket ssl)
-						throws IOException {
-				}
-
-				public void verify(String host, String[] cns,
-						String[] subjectAlts) throws SSLException {
-				}
-
-				public boolean verify(String arg0, SSLSession arg1) {
-					return true;
-				}
-
-				public void verify(String host,
-						java.security.cert.X509Certificate cert)
-						throws SSLException {
-				}
-			};
+			X509HostnameVerifier hostnameVerifier = new AllowAllHostnameVerifier();
 			ctx.init(null, new TrustManager[] { tm }, null);
 			SSLSocketFactory ssf = new SSLSocketFactory(ctx, hostnameVerifier);
 			SchemeRegistry registry = new SchemeRegistry();
 			registry.register(new Scheme("https", 443, ssf));
 			registry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
-			ThreadSafeClientConnManager mgr = new ThreadSafeClientConnManager(
+			ClientConnectionManager mgr = new PoolingClientConnectionManager(
 					registry);
 
-			NegotiateSchemeFactory nsf = new NegotiateSchemeFactory();
+			SPNegoSchemeFactory nsf = new SPNegoSchemeFactory();
 			DefaultHttpClient httpclient = new DefaultHttpClient(mgr,
 					base.getParams());
 			httpclient.getAuthSchemes().register(AuthPolicy.SPNEGO, nsf);
