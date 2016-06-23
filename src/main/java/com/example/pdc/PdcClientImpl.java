@@ -272,20 +272,21 @@ public class PdcClientImpl implements PdcClient, InvocationHandler{
 
 	private String parseResponse(HttpResponse response) throws Exception {
 		StringBuffer sb = new StringBuffer();
+		BufferedReader rd = new BufferedReader(new InputStreamReader(
+                response.getEntity().getContent()));
+        String line = "";
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
 		if (response.getStatusLine().getStatusCode() >= 200
 				&& response.getStatusLine().getStatusCode() <= 300) {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(
-					response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				sb.append(line);
-			}
+		    return sb.toString();
 		} else {
 			throw new Exception("http response code error: "
 					+ response.getStatusLine().getStatusCode() + "  "
-					+ response.getStatusLine().getReasonPhrase());
+					+ response.getStatusLine().getReasonPhrase() + "; " 
+					+ "details:" + sb.toString());
 		}
-		return sb.toString();
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args)
